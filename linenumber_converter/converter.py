@@ -58,6 +58,12 @@ class LineNumberConverter:
         return dict
 
     def convert(self, line):
+        max_ = max(self.translater.keys())
+        min_ = min(self.translater.keys())
+        if line > max_:
+            line = max_
+        elif line < min_:
+            line = min_
         return self.translater.get(line, None)
 
     def convert_inv(self, line):
