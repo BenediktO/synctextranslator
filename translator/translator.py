@@ -22,6 +22,11 @@ def callZathura(pdf_file, line, tex_file):
 	subprocess.call(cmd, shell=True)
 
 
+def callVSCode(pdf_file, line, tex_source):
+	cmd = 'code -g %s:%d' %(tex_source, line)
+	subprocess.call(cmd, shell=True)
+
+
 def translate(line, tex_source, tex_file, pdf_file, target):
 	convert = LineNumberConverter(tex_source, tex_file)
 
@@ -34,28 +39,40 @@ def translate(line, tex_source, tex_file, pdf_file, target):
 		callZathura(pdf_file, newline, tex_file)
 
 
-def load_config(texfile):
-	filename = Path(texfile).name
-	config_filename = (Path(texfile).parent / '_build' / filename).with_suffix('.conf')
+def translate_inv(line, tex_source, tex_file, pdf_file, target):
+	convert = LineNumberConverter(tex_source, tex_file)
+
+	newline = convert.convert_inv(line)
+
+	if target == 'vscode':
+		callVSCode(pdf_file, newline, tex_source)
+
+
+def load_config(conffile, origin):
+	if not conffile.endswith('.conf'):
+		conffile = '/'.join(conffile.split('/')[0:-1]) + '/synctex.conf'
 
 	config = configparser.ConfigParser()
 
-	config.read(config_filename)
+	config.read(conffile)
 
-	return config.get('DEFAULT', 'tex_source'), config.get('DEFAULT', 'tex_file'), config.get('DEFAULT', 'pdf_file')
+	section = origin.split('/')[-1]
+	return config.get(section, 'tex_source'), config.get(section, 'tex_file'), config.get(section, 'pdf_file')
 
 def main(*args, **kwargs):
-	if len(sys.argv) == 4 and sys.argv[2].endswith('.tex'):
-		tex_source, tex_file, pdf_file = load_config(sys.argv[2])
+	if len(sys.argv) == 5:
 		line = sys.argv[1]
-		target = sys.argv[3]
+		origin = sys.argv[2]
+		conffile = sys.argv[3]
+		target = sys.argv[4]
+		tex_source, tex_file, pdf_file = load_config(conffile, origin)
 
 	elif len(sys.argv) == 6:
 		line, tex_source, tex_file, pdf_file, target = sys.argv[1:]
 
 	else:
 		print('Usage: %s line tex_source tex_file pdf_file target' %sys.argv[0])
-		print('Usage: %s line tex_file target' %sys.argv[0])
+		print('Usage: %s line origin configfile target' %sys.argv[0])
 		return
 
 	if not line.isnumeric():
@@ -65,13 +82,13 @@ def main(*args, **kwargs):
 	line = int(line)
 
 	targets = ['okular', 'zathura']
-	targets_inv = []
+	targets_inv = ['vscode']
 
 	if target in targets:
 		translate(line, tex_source, tex_file, pdf_file, target)
 
 	elif target in targets_inv:
-		pass#translate(line, tex_source, tex_file, pdf_file, mode)
+		translate_inv(line, tex_source, tex_file, pdf_file, target)
 
 	else:
 		print('target %s unknown' %target)
