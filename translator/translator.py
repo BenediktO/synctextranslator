@@ -17,13 +17,21 @@ def callOkular(pdf_file, line, tex_file):
 	subprocess.call(cmd, shell=True)
 
 
-def translate(line, tex_source, tex_file, pdf_file, mode):
+def callZathura(pdf_file, line, tex_file):
+	cmd = 'zathura --synctex-forward %d:0:%s %s&' %(line, tex_file, pdf_file)
+	subprocess.call(cmd, shell=True)
+
+
+def translate(line, tex_source, tex_file, pdf_file, target):
 	convert = LineNumberConverter(tex_source, tex_file)
 
 	newline = convert.convert(line)
 
-	if mode == 'okular':
+	if target == 'okular':
 		callOkular(pdf_file, newline, tex_file)
+
+	elif target == 'zathura':
+		callZathura(pdf_file, newline, tex_file)
 
 
 def load_config(texfile):
@@ -37,17 +45,17 @@ def load_config(texfile):
 	return config.get('DEFAULT', 'tex_source'), config.get('DEFAULT', 'tex_file'), config.get('DEFAULT', 'pdf_file')
 
 def main(*args, **kwargs):
-	#TODO: fix args
-	if len(sys.argv) == 3 and sys.argv[2].endswith('.tex'):
+	if len(sys.argv) == 4 and sys.argv[2].endswith('.tex'):
 		tex_source, tex_file, pdf_file = load_config(sys.argv[2])
 		line = sys.argv[1]
+		target = sys.argv[3]
 
-	elif len(sys.argv) == 5:
-		line, tex_source, tex_file, pdf_file = sys.argv[1:]
+	elif len(sys.argv) == 6:
+		line, tex_source, tex_file, pdf_file, target = sys.argv[1:]
 
 	else:
-		print('Usage: %s line, tex_source, tex_file, pdf_file' %sys.argv[0])
-		print('Usage: %s line, tex_file' %sys.argv[0])
+		print('Usage: %s line tex_source tex_file pdf_file target' %sys.argv[0])
+		print('Usage: %s line tex_file target' %sys.argv[0])
 		return
 
 	if not line.isnumeric():
@@ -56,6 +64,14 @@ def main(*args, **kwargs):
 
 	line = int(line)
 
-	mode = 'okular'
-	translate(line, tex_source, tex_file, pdf_file, mode)
+	targets = ['okular', 'zathura']
+	targets_inv = []
 
+	if target in targets:
+		translate(line, tex_source, tex_file, pdf_file, target)
+
+	elif target in targets_inv:
+		pass#translate(line, tex_source, tex_file, pdf_file, mode)
+
+	else:
+		print('target %s unknown' %target)
