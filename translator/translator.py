@@ -13,7 +13,7 @@ from linenumber_converter.converter import LineNumberConverter
 
 
 def callOkular(pdf_file, line, tex_file):
-	cmd = 'okular --unique "%s#src:%d %s"' %(pdf_file, line, tex_file)
+	cmd = 'okular --unique "%s#src:%d %s"&' %(pdf_file, line, tex_file)
 	subprocess.call(cmd, shell=True)
 
 
