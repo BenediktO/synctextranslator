@@ -102,6 +102,16 @@ def main(*args, **kwargs):
 
 	line = int(line)
 
+	if target in ['editor', 'viewer']:
+		# 'editor' and 'viewer' are meta targets, look them up in configfile
+		import os
+		CONFIGFILE = os.path.expanduser('~/.config/synctextranslator.conf')
+		if os.path.exists(CONFIGFILE):
+			import configparser
+			config = configparser.ConfigParser()
+			config.read(CONFIGFILE)
+			target = config.get('DEFAULT', target)
+
 	if target in TARGETS:
 		translate(line, tex_source, tex_file, pdf_file, target)
 
