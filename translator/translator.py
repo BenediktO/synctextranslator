@@ -18,22 +18,27 @@ def callZathura(pdf_file, line, tex_file):
 	cmd = 'zathura --synctex-forward %d:0:%s %s&' %(line, tex_file, pdf_file)
 	subprocess.call(cmd, shell=True)
 
+TARGETS = {
+	'okular': callOkular,
+	'zathura': callZathura,
+	}
+
 
 def callVSCode(pdf_file, line, tex_source):
 	cmd = 'code -g %s:%d' %(tex_source, line)
 	subprocess.call(cmd, shell=True)
 
+TARGETS_INV = {
+	'vscode': callVSCode,
+	}
 
 def translate(line, tex_source, tex_file, pdf_file, target):
 	convert = LineNumberConverter(tex_source, tex_file)
 
 	newline = convert.convert(line)
 
-	if target == 'okular':
-		callOkular(pdf_file, newline, tex_file)
-
-	elif target == 'zathura':
-		callZathura(pdf_file, newline, tex_file)
+	if target in TARGETS:
+		TARGETS[target](pdf_file, newline, tex_file)
 
 
 def translate_inv(line, tex_source, tex_file, pdf_file, target):
@@ -41,8 +46,8 @@ def translate_inv(line, tex_source, tex_file, pdf_file, target):
 
 	newline = convert.convert_inv(line)
 
-	if target == 'vscode':
-		callVSCode(pdf_file, newline, tex_source)
+	if target in TARGETS_INV:
+		TARGETS_INV[target](pdf_file, newline, tex_source)
 
 
 def load_config(origin):
@@ -63,8 +68,9 @@ def load_config(origin):
 
 			if '% synctextranslator' in line:
 				active = True
-	params = {line.split('=')[0].strip(' '): line.split('=')[1].lstrip(' ') for line in extracted if '=' in line}
 
+	params = {line.split('=')[0].strip(' '): line.split('=')[1].lstrip(' ') for line in extracted if '=' in line}
+	# 3 keys are needed: tex_source, tex_file, pdf_file
 	return params.get('tex_source'), params.get('tex_file'), params.get('pdf_file')
 
 def main(*args, **kwargs):
