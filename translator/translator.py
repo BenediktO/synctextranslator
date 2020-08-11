@@ -2,9 +2,6 @@
 
 import sys
 import subprocess
-import configparser
-
-from pathlib import Path
 
 from linenumber_converter.converter import LineNumberConverter
 
@@ -48,31 +45,41 @@ def translate_inv(line, tex_source, tex_file, pdf_file, target):
 		callVSCode(pdf_file, newline, tex_source)
 
 
-def load_config(conffile, origin):
-	if not conffile.endswith('.conf'):
-		conffile = '/'.join(conffile.split('/')[0:-1]) + '/synctex.conf'
+def load_config(origin):
+	# extract configuration from the % synctextranslator section of the tex file
+	if not origin.endswith('.tex'):
+		origin = origin.split('.')[0]+'.tex'
 
-	config = configparser.ConfigParser()
+	active = False
+	extracted = []
 
-	config.read(conffile)
+	with open(origin) as f:
+		for line in f:
+			if line.lstrip(' \t')[0:1] != '%':
+				active = False
 
-	section = origin.split('/')[-1]
-	return config.get(section, 'tex_source'), config.get(section, 'tex_file'), config.get(section, 'pdf_file')
+			if active:
+				extracted.append(line.lstrip(' \t%').strip('\n '))
+
+			if '% synctextranslator' in line:
+				active = True
+	params = {line.split('=')[0].strip(' '): line.split('=')[1].lstrip(' ') for line in extracted if '=' in line}
+
+	return params.get('tex_source'), params.get('tex_file'), params.get('pdf_file')
 
 def main(*args, **kwargs):
-	if len(sys.argv) == 5:
+	if len(sys.argv) == 4:
 		line = sys.argv[1]
 		origin = sys.argv[2]
-		conffile = sys.argv[3]
-		target = sys.argv[4]
-		tex_source, tex_file, pdf_file = load_config(conffile, origin)
+		target = sys.argv[3]
+		tex_source, tex_file, pdf_file = load_config(origin)
 
 	elif len(sys.argv) == 6:
 		line, tex_source, tex_file, pdf_file, target = sys.argv[1:]
 
 	else:
 		print('Usage: %s line tex_source tex_file pdf_file target' %sys.argv[0])
-		print('Usage: %s line origin configfile target' %sys.argv[0])
+		print('Usage: %s line tex_file target' %sys.argv[0])
 		return
 
 	if not line.isnumeric():
