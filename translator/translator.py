@@ -102,13 +102,10 @@ def main(*args, **kwargs):
 
 	line = int(line)
 
-	targets = ['okular', 'zathura']
-	targets_inv = ['vscode']
-
-	if target in targets:
+	if target in TARGETS:
 		translate(line, tex_source, tex_file, pdf_file, target)
 
-	elif target in targets_inv:
+	elif target in TARGETS_INV:
 		translate_inv(line, tex_source, tex_file, pdf_file, target)
 
 	else:
