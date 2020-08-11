@@ -10,11 +10,13 @@ from linenumber_converter.converter import LineNumberConverter
 
 
 def callOkular(pdf_file, line, tex_file):
+	# Call okular in unique mode with reference to the tex file
 	cmd = 'okular --unique "%s#src:%d %s"&' %(pdf_file, line, tex_file)
 	subprocess.call(cmd, shell=True)
 
 
 def callZathura(pdf_file, line, tex_file):
+	# Call zathura with reference to the tex file
 	cmd = 'zathura --synctex-forward %d:0:%s %s&' %(line, tex_file, pdf_file)
 	subprocess.call(cmd, shell=True)
 
@@ -25,6 +27,7 @@ TARGETS = {
 
 
 def callVSCode(pdf_file, line, tex_source):
+	# Open file at specific line in VSCode
 	cmd = 'code -g %s:%d' %(tex_source, line)
 	subprocess.call(cmd, shell=True)
 
@@ -33,6 +36,7 @@ TARGETS_INV = {
 	}
 
 def translate(line, tex_source, tex_file, pdf_file, target):
+	# forward synctex
 	convert = LineNumberConverter(tex_source, tex_file)
 
 	newline = convert.convert(line)
@@ -42,6 +46,7 @@ def translate(line, tex_source, tex_file, pdf_file, target):
 
 
 def translate_inv(line, tex_source, tex_file, pdf_file, target):
+	# backward synctex
 	convert = LineNumberConverter(tex_source, tex_file)
 
 	newline = convert.convert_inv(line)
@@ -74,6 +79,9 @@ def load_config(origin):
 	return params.get('tex_source'), params.get('tex_file'), params.get('pdf_file')
 
 def main(*args, **kwargs):
+	'''
+	Main function
+	'''
 	if len(sys.argv) == 4:
 		line = sys.argv[1]
 		origin = sys.argv[2]
