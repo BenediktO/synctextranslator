@@ -1,4 +1,23 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+# -*- coding: UTF-8 -*-
+
+#  This file is part of the synctextranslator package.
+#
+#  Copyright (C) 2020  Benedikt Otto <s6beotto@uni-bonn.de>
+#
+#  This program is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 
 import sys
 import subprocess
@@ -37,9 +56,13 @@ TARGETS_INV = {
 
 def translate(line, tex_source, tex_file, pdf_file, target):
 	# forward synctex
-	convert = LineNumberConverter(tex_source, tex_file)
+	if tex_source != tex_file:
+		convert = LineNumberConverter(tex_source, tex_file)
 
-	newline = convert.convert(line)
+		newline = convert.convert(line)
+
+	else:
+		newline = line
 
 	if target in TARGETS:
 		TARGETS[target](pdf_file, newline, tex_file)
@@ -59,6 +82,7 @@ def load_config(origin):
 	# extract configuration from the % synctextranslator section of the tex file
 	if not origin.endswith('.tex'):
 		origin = origin.split('.')[0]+'.tex'
+		origin_pdf = origin.split('.')[0]+'.pdf'
 
 	active = False
 	extracted = []
@@ -74,7 +98,12 @@ def load_config(origin):
 			if '% synctextranslator' in line:
 				active = True
 
-	params = {line.split('=')[0].strip(' '): line.split('=')[1].lstrip(' ') for line in extracted if '=' in line}
+	params = {
+		'tex_source': origin,
+		'tex_file': origin,
+		'pdf_file': origin_pdf,
+	}
+	params = {**params, **{line.split('=')[0].strip(' '): line.split('=')[1].lstrip(' ') for line in extracted if '=' in line}}
 	if not 'directory' in params:
 		params['directory'] = ''
 	# 3 keys are needed: tex_source, tex_file, pdf_file
