@@ -80,9 +80,9 @@ def translate_inv(line, tex_source, tex_file, pdf_file, target):
 
 def load_config(origin):
 	# extract configuration from the % synctextranslator section of the tex file
-	if not origin.endswith('.tex'):
-		origin = origin.split('.')[0]+'.tex'
-		origin_pdf = origin.split('.')[0]+'.pdf'
+	#if not origin.endswith('.tex'):
+	origin = '.'.join(origin.split('.')[:-1]) + '.tex'
+	origin_pdf = '.'.join(origin.split('.')[:-1]) + '.pdf'
 
 	active = False
 	extracted = []
