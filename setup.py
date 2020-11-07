@@ -42,7 +42,7 @@ setuptools.setup(
     python_requires='>=3.6',
     entry_points={
         'console_scripts': [
-            'synctextranslator=translator.translator:main'
+            'synctextranslator=synctex_translator.translator:main'
         ],
 	}
 )
