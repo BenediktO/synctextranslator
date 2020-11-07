@@ -36,7 +36,7 @@ def callOkular(pdf_file, line, tex_file):
 
 def callZathura(pdf_file, line, tex_file):
 	# Call zathura with reference to the tex file
-	cmd = 'zathura --synctex-forward %d:0:%s %s&' %(line, tex_file, pdf_file)
+	cmd = 'zathura --synctex-forward %d:0:"%s" %s&' %(line, tex_file, pdf_file)
 	subprocess.call(cmd, shell=True)
 
 TARGETS = {
@@ -47,7 +47,7 @@ TARGETS = {
 
 def callVSCode(pdf_file, line, tex_source):
 	# Open file at specific line in VSCode
-	cmd = 'code -g %s:%d' %(tex_source, line)
+	cmd = 'code -g "%s":%d' %(tex_source, line)
 	subprocess.call(cmd, shell=True)
 
 TARGETS_INV = {
