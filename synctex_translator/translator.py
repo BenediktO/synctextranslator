@@ -106,6 +106,9 @@ def load_config(origin):
 	params = {**params, **{line.split('=')[0].strip(' '): line.split('=')[1].lstrip(' ') for line in extracted if '=' in line}}
 	if not 'directory' in params:
 		params['directory'] = ''
+	elif params['directory'][-1] != '/':
+		params['directory'] += '/'
+
 	# 3 keys are needed: tex_source, tex_file, pdf_file
 	return params.get('directory') + params.get('tex_source'), \
 			params.get('directory') + params.get('tex_file'), \
